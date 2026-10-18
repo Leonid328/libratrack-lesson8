@@ -7,6 +7,7 @@ import (
 
 	"libratrack/internal/model"
 
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/lib/pq"
 	"gorm.io/gorm"
 )
@@ -171,11 +172,22 @@ func uniqueIDs(ids []uint) []uint {
 
 func mapDBErr(err error) error {
 	var pqErr *pq.Error
-	if errors.As(err, &pqErr) && pqErr.Code == "23505" {
-		return ErrConflict
+	if errors.As(err, &pqErr) {
+		switch pqErr.Code {
+		case "23505":
+			return ErrConflict
+		case "23503":
+			return ErrInvalidRef
+		}
 	}
-	if errors.As(err, &pqErr) && pqErr.Code == "23503" {
-		return ErrInvalidRef
+	var pgErr *pgconn.PgError
+	if errors.As(err, &pgErr) {
+		switch pgErr.Code {
+		case "23505":
+			return ErrConflict
+		case "23503":
+			return ErrInvalidRef
+		}
 	}
 	return err
 }
