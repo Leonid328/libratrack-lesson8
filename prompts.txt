@@ -1,0 +1,27 @@
+Task 2.1 (Lesson 8 / 9) — migrations and auth:
+
+Generate golang-migrate SQL files 000002_normalize_books.up.sql and .down.sql for LibraTrack.
+Tables: authors(id, full_name, bio), categories(id, name), books with category_id FK ON DELETE RESTRICT,
+book_authors join with ON DELETE CASCADE on book_id and ON DELETE RESTRICT on author_id,
+indexes on all foreign keys. Also generate 000003_add_auth_fields.up.sql adding password_hash to users.
+Register hashes passwords with bcrypt.DefaultCost, default role reader. Login uses CompareHashAndPassword
+and issues JWT HS256 with user_id, role, exp 24h, secret from os.Getenv("JWT_SECRET").
+
+Task 2.2 — middleware:
+
+Generate AuthMiddleware that reads Authorization Bearer or HttpOnly cookie libratrack_token,
+validates signature and exp, c.Set user_id and role. Generate RequireRole(allowed ...string)
+returning 401 if unauthenticated and 403 if role is not allowed, using AbortWithStatusJSON.
+Register Gin groups: public, protected (Auth), staff (Auth then RequireRole librarian/admin),
+admin (Auth then RequireRole admin).
+
+Task 2.1 (Lesson 10) — templates:
+
+Generate web/templates/layout.html using html/template (not text/template), catalog.html with a
+book table and search input, and partials/book_row.html. Catalog shows title, isbn, category, authors.
+
+Task 2.2 (Lesson 10) — HTMX:
+
+Search input: hx-get="/web/books" hx-trigger="keyup changed delay:300ms" hx-target="#book-list".
+Delete button: hx-delete="/web/books/{{.ID}}" hx-target="closest tr" hx-swap="outerHTML"
+hx-confirm="Delete this book?". Delete handler returns empty 200.
